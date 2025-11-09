@@ -54,12 +54,6 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
       )}
 
       <View style={styles.content}>
-        <View style={styles.actions}>
-          <Ionicons name="heart-outline" size={28} color={theme.text} style={styles.actionIcon} />
-          <Ionicons name="chatbubble-outline" size={26} color={theme.text} style={styles.actionIcon} />
-          <Ionicons name="paper-plane-outline" size={26} color={theme.text} />
-        </View>
-
         {post.text && (
           <View style={styles.captionContainer}>
             <Text style={[styles.caption, { color: theme.text }]}>
