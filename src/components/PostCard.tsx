@@ -1,7 +1,10 @@
-import React from 'react';
-import { View, Text, Image, StyleSheet, Dimensions } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, Image, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
+import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { db } from '../config/firebase';
 import { Post } from '../types';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
@@ -12,6 +15,48 @@ interface PostCardProps {
 
 export const PostCard: React.FC<PostCardProps> = ({ post }) => {
   const { theme } = useTheme();
+  const { user } = useAuth();
+  const [isLiked, setIsLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(post.likeCount || 0);
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  useEffect(() => {
+    if (user && post.likes) {
+      setIsLiked(post.likes.includes(user.uid));
+    }
+    setLikeCount(post.likes?.length || 0);
+  }, [post.likes, user]);
+
+  const handleLike = async () => {
+    if (!user || isAnimating) return;
+
+    setIsAnimating(true);
+    const newIsLiked = !isLiked;
+
+    // Optimistic update
+    setIsLiked(newIsLiked);
+    setLikeCount(newIsLiked ? likeCount + 1 : likeCount - 1);
+
+    try {
+      const postRef = doc(db, 'posts', post.id);
+      if (newIsLiked) {
+        await updateDoc(postRef, {
+          likes: arrayUnion(user.uid),
+        });
+      } else {
+        await updateDoc(postRef, {
+          likes: arrayRemove(user.uid),
+        });
+      }
+    } catch (error) {
+      console.error('Error updating like:', error);
+      // Revert on error
+      setIsLiked(!newIsLiked);
+      setLikeCount(newIsLiked ? likeCount - 1 : likeCount + 1);
+    } finally {
+      setTimeout(() => setIsAnimating(false), 300);
+    }
+  };
 
   const formatTimestamp = (date: Date) => {
     const now = new Date();
@@ -54,6 +99,25 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
       )}
 
       <View style={styles.content}>
+        <View style={styles.actions}>
+          <TouchableOpacity onPress={handleLike} disabled={isAnimating}>
+            <Ionicons
+              name={isLiked ? 'heart' : 'heart-outline'}
+              size={28}
+              color={isLiked ? '#ed4956' : theme.text}
+              style={styles.actionIcon}
+            />
+          </TouchableOpacity>
+          <Ionicons name="chatbubble-outline" size={26} color={theme.text} style={styles.actionIcon} />
+          <Ionicons name="paper-plane-outline" size={26} color={theme.text} />
+        </View>
+
+        {likeCount > 0 && (
+          <Text style={[styles.likes, { color: theme.text }]}>
+            {likeCount} {likeCount === 1 ? 'like' : 'likes'}
+          </Text>
+        )}
+
         {post.text && (
           <View style={styles.captionContainer}>
             <Text style={[styles.caption, { color: theme.text }]}>
@@ -118,6 +182,11 @@ const styles = StyleSheet.create({
   },
   actionIcon: {
     marginRight: 16,
+  },
+  likes: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 4,
   },
   captionContainer: {
     marginTop: 4,

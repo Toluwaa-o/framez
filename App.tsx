@@ -8,8 +8,10 @@ import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 import { AuthScreen } from './src/screens/AuthScreen';
 import { FeedScreen } from './src/screens/FeedScreen';
+import { SearchScreen } from './src/screens/SearchScreen';
 import { CreatePostScreen } from './src/screens/CreatePostScreen';
 import { ProfileScreen } from './src/screens/ProfileScreen';
+import { UserProfileScreen } from './src/screens/UserProfileScreen';
 import { LoadingSpinner } from './src/components/LoadingSpinner';
 import { RootStackParamList, MainTabParamList } from './src/types';
 
@@ -27,6 +29,8 @@ function MainTabs() {
 
           if (route.name === 'Feed') {
             iconName = focused ? 'home' : 'home-outline';
+          } else if (route.name === 'Search') {
+            iconName = focused ? 'search' : 'search-outline';
           } else if (route.name === 'CreatePost') {
             iconName = focused ? 'add-circle' : 'add-circle-outline';
           } else if (route.name === 'Profile') {
@@ -50,6 +54,7 @@ function MainTabs() {
       })}
     >
       <Tab.Screen name="Feed" component={FeedScreen} />
+      <Tab.Screen name="Search" component={SearchScreen} />
       <Tab.Screen name="CreatePost" component={CreatePostScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
@@ -66,7 +71,10 @@ function AppNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {user ? (
-        <Stack.Screen name="Main" component={MainTabs} />
+        <>
+          <Stack.Screen name="Main" component={MainTabs} />
+          <Stack.Screen name="UserProfile" component={UserProfileScreen} />
+        </>
       ) : (
         <Stack.Screen name="Auth" component={AuthScreen} />
       )}

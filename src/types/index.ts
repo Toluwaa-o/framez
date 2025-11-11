@@ -13,7 +13,25 @@ export interface Post {
     text: string;
     imageUrl?: string;
     timestamp: Date;
-    likes?: number;
+    likes: string[];
+    likeCount: number;
+}
+
+export interface Follow {
+    followerId: string;
+    followingId: string;
+    timestamp: Date;
+}
+
+export interface UserProfile {
+    uid: string;
+    displayName: string;
+    email: string;
+    photoURL?: string;
+    bio?: string;
+    followersCount: number;
+    followingCount: number;
+    postsCount: number;
 }
 
 export type RootStackParamList = {
@@ -23,6 +41,7 @@ export type RootStackParamList = {
 
 export type MainTabParamList = {
     Feed: undefined;
+    Search: undefined;
     CreatePost: undefined;
     Profile: undefined;
 };

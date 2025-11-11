@@ -22,14 +22,14 @@ export const FeedScreen: React.FC = () => {
 
   useEffect(() => {
     const q = query(collection(db, 'posts'), orderBy('timestamp', 'desc'));
-    
+
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const postsData: Post[] = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
         timestamp: doc.data().timestamp?.toDate() || new Date(),
       } as Post));
-      
+
       setPosts(postsData);
       setLoading(false);
       setRefreshing(false);
@@ -54,6 +54,14 @@ export const FeedScreen: React.FC = () => {
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={[styles.header, { backgroundColor: theme.background, borderBottomColor: theme.border }]}>
         <Text style={[styles.headerTitle, { color: theme.text }]}>Framez</Text>
+        <View style={styles.headerIcons}>
+          <TouchableOpacity style={styles.iconButton}>
+            <Ionicons name="heart-outline" size={28} color={theme.text} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.iconButton}>
+            <Ionicons name="paper-plane-outline" size={26} color={theme.text} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {posts.length === 0 ? (

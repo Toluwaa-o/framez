@@ -9,7 +9,7 @@ import {
   Dimensions,
   Alert,
 } from 'react-native';
-import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, orderBy, onSnapshot, getDocs, getDoc, doc } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -25,29 +25,50 @@ export const ProfileScreen: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [showThemeMenu, setShowThemeMenu] = useState(false);
+  const [followersCount, setFollowersCount] = useState('0')
+  const [followingCount, setFollowingCount] = useState('0')
 
   useEffect(() => {
     if (!user) return;
 
-    const q = query(
-      collection(db, 'posts'),
-      where('userId', '==', user.uid),
-      orderBy('timestamp', 'desc')
+    const postsQuery = query(
+      collection(db, "posts"),
+      where("userId", "==", user.uid),
+      orderBy("timestamp", "desc")
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const userPosts: Post[] = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-        timestamp: doc.data().timestamp?.toDate() || new Date(),
-      } as Post));
+    const unsubscribePosts = onSnapshot(postsQuery, snapshot => {
+      const userPosts: Post[] = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data(), timestamp: doc.data().timestamp?.toDate() || new Date(), } as Post));
 
       setPosts(userPosts);
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    const followersQuery = query(
+      collection(db, "follows"),
+      where("followingId", "==", user.uid)
+    );
+
+    const unsubscribeFollowers = onSnapshot(followersQuery, snap => {
+      setFollowersCount(snap.size.toString());
+    });
+
+    const followingQuery = query(
+      collection(db, "follows"),
+      where("followerId", "==", user.uid)
+    );
+
+    const unsubscribeFollowing = onSnapshot(followingQuery, snap => {
+      setFollowingCount(snap.size.toString());
+    });
+
+    return () => {
+      unsubscribePosts();
+      unsubscribeFollowers();
+      unsubscribeFollowing();
+    };
   }, [user]);
+
 
   const handleLogout = () => {
     Alert.alert('Log Out', 'Are you sure you want to log out?', [
@@ -146,11 +167,11 @@ export const ProfileScreen: React.FC = () => {
               <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Posts</Text>
             </View>
             <View style={styles.stat}>
-              <Text style={[styles.statNumber, { color: theme.text }]}>0</Text>
+              <Text style={[styles.statNumber, { color: theme.text }]}>{followersCount}</Text>
               <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Followers</Text>
             </View>
             <View style={styles.stat}>
-              <Text style={[styles.statNumber, { color: theme.text }]}>0</Text>
+              <Text style={[styles.statNumber, { color: theme.text }]}>{followingCount}</Text>
               <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Following</Text>
             </View>
           </View>

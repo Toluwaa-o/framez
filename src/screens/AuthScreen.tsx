@@ -59,7 +59,6 @@ export const AuthScreen: React.FC = () => {
               <TextInput
                 style={styles.input}
                 placeholder="Display Name"
-                placeholderTextColor="#8e8e8e"
                 value={displayName}
                 onChangeText={setDisplayName}
                 autoCapitalize="words"
@@ -68,7 +67,6 @@ export const AuthScreen: React.FC = () => {
             <TextInput
               style={styles.input}
               placeholder="Email"
-              placeholderTextColor="#8e8e8e"
               value={email}
               onChangeText={setEmail}
               autoCapitalize="none"
@@ -150,6 +148,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#dbdbdb',
     borderRadius: 5,
+    color: "#8e8e8e",
     padding: 15,
     marginBottom: 12,
     fontSize: 14,
